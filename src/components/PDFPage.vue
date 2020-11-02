@@ -1,19 +1,22 @@
 <template>
   <div>
-    <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs"></canvas>
+    <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
     <Moveable
-      class="moveable"
-      v-bind="moveable"
-      @drag="handleDrag"
+        class="moveable"
+        v-bind="moveable"
+        ref="moveable"
+        @drag="handleDrag"
     >
-      <span>Assinatura</span>
+      <div
+          :style="{ width: signatureDimensions.width + 'px', height: signatureDimensions.height + 'px' }">Assinatura</div>
     </Moveable>
-  </div>  
+  </div>
 </template>
 
 <script>
 import Moveable from 'vue-moveable'
 import debug from 'debug';
+
 const log = debug('app:components/PDFPage');
 
 import {PIXEL_RATIO} from '../utils/constants';
@@ -27,50 +30,51 @@ export default {
   props: {
     page: {
       type: Object, // instance of PDFPageProxy returned from pdf.getPage
-      required: true,
+      required: true
     },
     scale: {
       type: Number,
-      required: true,
+      required: true
     },
     optimalScale: {
       type: Number,
-      required: true,
+      required: true
     },
     isPageFocused: {
       type: Boolean,
-      default: false,
+      default: false
     },
     isElementFocused: {
       type: Boolean,
-      default: false,
-    },
+      default: false
+    }
   },
 
   directives: {
-    visible,
+    visible
   },
-  data() {
+  data () {
     return {
       moveable: {
         draggable: true,
-        throttleDrag: 1,
+        throttleDrag: 1
       },
+      signatureDimensions: {}
     }
   },
   computed: {
-    actualSizeViewport() {
+    actualSizeViewport () {
       return this.viewport.clone({scale: this.scale});
     },
 
-    canvasStyle() {
+    canvasStyle () {
       const {width: actualSizeWidth, height: actualSizeHeight} = this.actualSizeViewport;
       const [pixelWidth, pixelHeight] = [actualSizeWidth, actualSizeHeight]
-        .map(dim => Math.ceil(dim / PIXEL_RATIO));
+          .map(dim => Math.ceil(dim / PIXEL_RATIO));
       return `width: ${pixelWidth}px; height: ${pixelHeight}px;`;
     },
 
-    canvasAttrs() {
+    canvasAttrs () {
       let {width, height} = this.viewport;
       [width, height] = [width, height].map(dim => Math.ceil(dim));
       const style = this.canvasStyle;
@@ -79,28 +83,28 @@ export default {
         width,
         height,
         style,
-        class: 'pdf-page box-shadow',
+        class: 'pdf-page box-shadow'
       };
     },
 
-    pageNumber() {
+    pageNumber () {
       return this.page.pageNumber;
-    },
+    }
   },
 
   methods: {
-    handleDrag({ target, transform }) {
+    handleDrag ({target, transform}) {
       console.log("onDrag", transform);
       target.style.transform = transform;
     },
 
-    focusPage() {
+    focusPage () {
       if (this.isPageFocused) return;
 
       this.$emit('page-focus', this.pageNumber);
     },
 
-    drawPage() {
+    drawPage () {
       if (this.renderTask) return;
 
       const {viewport} = this;
@@ -112,27 +116,36 @@ export default {
       // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
       this.renderTask = this.page.render(renderContext);
       this.renderTask
-        .then(() => {
-          this.$emit('page-rendered', {
-            page: this.page,
-            text: `Rendered page ${this.pageNumber}`,
+          .then(() => {
+            this.$emit('page-rendered', {
+              page: this.page,
+              text: `Rendered page ${this.pageNumber}`
+            });
+          })
+          .catch(response => {
+            this.destroyRenderTask();
+            this.$emit('page-errored', {
+              response,
+              page: this.page,
+              text: `Failed to render page ${this.pageNumber}`
+            });
           });
-         })
-        .catch(response => {
-          this.destroyRenderTask();
-          this.$emit('page-errored', {
-            response,
-            page: this.page,
-            text: `Failed to render page ${this.pageNumber}`,
-          });
-        });
     },
 
-    updateVisibility() {
+    updateVisibility () {
       this.$parent.$emit('update-visibility');
+
+      const originalWidth = 0.1
+      const originalHeight = 0.05
+      const pageWidth = parseInt(this.$refs.canvas.getAttribute('width'))
+      const pageHeight = parseInt(this.$refs.canvas.getAttribute('height'))
+      this.signatureDimensions = {
+        width: pageWidth * this.scale * originalWidth,
+        height: pageHeight * this.scale * originalHeight
+      }
     },
 
-    destroyPage(page) {
+    destroyPage (page) {
       // PDFPageProxy#_destroy
       // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
       if (page) page._destroy();
@@ -140,41 +153,43 @@ export default {
       this.destroyRenderTask();
     },
 
-    destroyRenderTask() {
+    destroyRenderTask () {
       if (!this.renderTask) return;
 
       // RenderTask#cancel
       // https://mozilla.github.io/pdf.js/api/draft/RenderTask.html
       this.renderTask.cancel();
       delete this.renderTask;
-    },
+    }
   },
 
   watch: {
     scale: 'updateVisibility',
 
-    page(_newPage, oldPage) {
+    page (_newPage, oldPage) {
       this.destroyPage(oldPage);
     },
 
-    isElementFocused(isElementFocused) {
+    isElementFocused (isElementFocused) {
       if (isElementFocused) this.focusPage();
-    },
+    }
   },
 
-  created() {
+  created () {
     // PDFPageProxy#getViewport
     // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
     this.viewport = this.page.getViewport(this.optimalScale);
   },
 
-  mounted() {
+  mounted () {
     log(`Page ${this.pageNumber} mounted`);
+    this.moveable.target = document.querySelector(".target")
+    this.$refs.moveable.updateTarget()
   },
 
-  beforeDestroy() {
+  beforeDestroy () {
     this.destroyPage(this.page);
-  },
+  }
 };
 </script>
 <style>
@@ -182,13 +197,12 @@ export default {
   display: block;
   margin: 0 auto;
 }
+
 .moveable {
   font-family: "Roboto", sans-serif;
   position: relative;
-  top:-280px;
+  top: -280px;
   left: 524px;
-  width: 300px;
-  height: 200px;
   text-align: center;
   font-size: 40px;
   margin: 0 auto;
@@ -197,7 +211,7 @@ export default {
   border: solid 1px #0000ff;
 }
 
-.moveable span {
+.moveable div {
   position: absolute;
   top: 50%;
   left: 50%;
