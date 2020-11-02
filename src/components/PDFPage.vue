@@ -1,8 +1,18 @@
 <template>
-  <canvas v-visible.once="drawPage" v-bind="canvasAttrs"></canvas>
+  <div>
+    <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs"></canvas>
+    <Moveable
+      class="moveable"
+      v-bind="moveable"
+      @drag="handleDrag"
+    >
+      <span>Assinatura</span>
+    </Moveable>
+  </div>  
 </template>
 
 <script>
+import Moveable from 'vue-moveable'
 import debug from 'debug';
 const log = debug('app:components/PDFPage');
 
@@ -11,7 +21,9 @@ import visible from '../directives/visible';
 
 export default {
   name: 'PDFPage',
-
+  components: {
+    Moveable
+  },
   props: {
     page: {
       type: Object, // instance of PDFPageProxy returned from pdf.getPage
@@ -38,7 +50,14 @@ export default {
   directives: {
     visible,
   },
-
+  data() {
+    return {
+      moveable: {
+        draggable: true,
+        throttleDrag: 1,
+      },
+    }
+  },
   computed: {
     actualSizeViewport() {
       return this.viewport.clone({scale: this.scale});
@@ -70,6 +89,11 @@ export default {
   },
 
   methods: {
+    handleDrag({ target, transform }) {
+      console.log("onDrag", transform);
+      target.style.transform = transform;
+    },
+
     focusPage() {
       if (this.isPageFocused) return;
 
@@ -80,7 +104,8 @@ export default {
       if (this.renderTask) return;
 
       const {viewport} = this;
-      const canvasContext = this.$el.getContext('2d');
+
+      const canvasContext = this.$refs.canvas.getContext('2d');
       const renderContext = {canvasContext, viewport};
 
       // PDFPageProxy#render
@@ -156,5 +181,27 @@ export default {
 .pdf-page {
   display: block;
   margin: 0 auto;
+}
+.moveable {
+  font-family: "Roboto", sans-serif;
+  position: relative;
+  top:-280px;
+  left: 524px;
+  width: 300px;
+  height: 200px;
+  text-align: center;
+  font-size: 40px;
+  margin: 0 auto;
+  font-weight: 100;
+  letter-spacing: 1px;
+  border: solid 1px #0000ff;
+}
+
+.moveable span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
 }
 </style>

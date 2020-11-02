@@ -4,38 +4,33 @@
     <PDFViewer
       v-bind="{url}"
       @document-errored="onDocumentErrored"
-      >
-      <PDFUploader
-        v-if="enableUploader"
-        :documentError="documentError"
-        @updated="urlUpdated"
-        slot="header"
-        class="header-item"
-        />
+    >
+      
     </PDFViewer>
   </div>
 </template>
 
 <script>
-import PDFUploader from './components/PDFUploader.vue'
 import PDFViewer from './components/PDFViewer.vue'
+
+import { URL } from './utils/constants'
 
 export default {
   name: 'app',
 
   components: {
-    PDFUploader,
     PDFViewer,
   },
 
   data() {
     return {
-      url: process.env.VUE_APP_PDF_URL,
+      url: URL,
+      // url: null,
       documentError: undefined,
       enableUploader: process.env.VUE_APP_UPLOAD_ENABLED === 'true',
     };
   },
-
+  
   methods: {
     urlUpdated(url) {
       this.documentError = undefined;
@@ -50,6 +45,16 @@ export default {
 </script>
 
 <style>
+.testmove {
+  display:block;
+  position: absolute;
+  top: 0;
+  height: 150px;
+  width: 150px;
+  margin: 200px;
+  background: #333;
+  color: white;
+}
 body {
   margin: 0;
   padding: 0;

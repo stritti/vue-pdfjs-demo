@@ -46,6 +46,7 @@
           />
       </template>
     </PDFData>
+    
   </div>
 </template>
 
@@ -86,7 +87,7 @@ export default {
       fit: undefined,
       currentPage: 1,
       pageCount: undefined,
-      isPreviewEnabled: false,
+      isPreviewEnabled: true,
     };
   },
 
@@ -156,18 +157,18 @@ header {
 .pdf-viewer__preview {
   display: block;
   width: 15%;
-  right: 85%;
+  left: 85%;
 }
 
 .pdf-viewer__document {
   top: 70px;
   width: 100%;
-  left: 0;
+  right: 0;
 }
 
 .pdf-viewer__document.preview-enabled {
   width: 85%;
-  left: 15%;
+  right: 15%;
 }
 
 @media print {
