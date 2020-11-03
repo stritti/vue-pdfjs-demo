@@ -1,20 +1,12 @@
 <template>
   <div>
     <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
-    <Moveable
-        class="moveable"
-        v-bind="moveable"
-        ref="moveable"
-        @drag="handleDrag"
-    >
-      <div
-          :style="{ width: signatureDimensions.width + 'px', height: signatureDimensions.height + 'px' }">Assinatura</div>
-    </Moveable>
+    <movable class="testmove" posTop="444" :grid="20"><span>grid:20</span></movable>
   </div>
 </template>
 
 <script>
-import Moveable from 'vue-moveable'
+// import Moveable from 'vue-moveable'
 import debug from 'debug';
 
 const log = debug('app:components/PDFPage');
@@ -24,9 +16,6 @@ import visible from '../directives/visible';
 
 export default {
   name: 'PDFPage',
-  components: {
-    Moveable
-  },
   props: {
     page: {
       type: Object, // instance of PDFPageProxy returned from pdf.getPage
@@ -57,11 +46,13 @@ export default {
     return {
       moveable: {
         draggable: true,
-        throttleDrag: 1
+        throttleDrag: 1,
+        renderDirections: ["nw", "ne", "sw", "se"],
       },
       signatureDimensions: {}
     }
   },
+
   computed: {
     actualSizeViewport () {
       return this.viewport.clone({scale: this.scale});
@@ -183,8 +174,9 @@ export default {
 
   mounted () {
     log(`Page ${this.pageNumber} mounted`);
-    this.moveable.target = document.querySelector(".target")
-    this.$refs.moveable.updateTarget()
+    // this.$refs.moveable.dragTarget = document.querySelector(".scrolling-page")
+
+    // console.log('MOV >>', this.$refs.moveable)
   },
 
   beforeDestroy () {
@@ -198,24 +190,15 @@ export default {
   margin: 0 auto;
 }
 
-.moveable {
-  font-family: "Roboto", sans-serif;
-  position: relative;
-  top: -280px;
-  left: 524px;
-  text-align: center;
-  font-size: 40px;
-  margin: 0 auto;
-  font-weight: 100;
-  letter-spacing: 1px;
-  border: solid 1px #0000ff;
+.testmove {
+  display:block;
+  position: absolute;
+  top: 0;
+  height: 150px;
+  width: 150px;
+  margin: 200px;
+  background: #f00;
+  color: white;
 }
 
-.moveable div {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  white-space: nowrap;
-}
 </style>
