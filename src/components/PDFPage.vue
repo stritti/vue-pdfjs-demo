@@ -142,11 +142,11 @@ export default {
       this.signatureBounds = {
         x: [
           this.$refs.canvas.offsetLeft,
-          (this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth) - this.signatureDimensions.width
+          (this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth) - 150
         ],
         y: [
           this.$refs.canvas.offsetTop,
-          (this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight) - this.signatureDimensions.height
+          (this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight) - 150
         ]
       }
     },
