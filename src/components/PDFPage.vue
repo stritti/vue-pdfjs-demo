@@ -1,7 +1,10 @@
 <template>
   <div>
     <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
-    <movable class="testmove" posTop="444" :grid="20"><span>grid:20</span></movable>
+    <movable class="testmove"
+             :bounds="signatureBounds"
+             :posTop="0"
+             :posLeft="0"><span>teste</span></movable>
   </div>
 </template>
 
@@ -47,7 +50,11 @@ export default {
       moveable: {
         draggable: true,
         throttleDrag: 1,
-        renderDirections: ["nw", "ne", "sw", "se"],
+        renderDirections: ["nw", "ne", "sw", "se"]
+      },
+      signatureBounds: {
+        x: [],
+        y: []
       },
       signatureDimensions: {}
     }
@@ -134,6 +141,17 @@ export default {
         width: pageWidth * this.scale * originalWidth,
         height: pageHeight * this.scale * originalHeight
       }
+
+      this.signatureBounds = {
+        x: [
+          this.$refs.canvas.offsetLeft,
+          this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth
+        ],
+        y: [
+          this.$refs.canvas.offsetTop,
+          this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight
+        ]
+      }
     },
 
     destroyPage (page) {
@@ -177,6 +195,7 @@ export default {
     // this.$refs.moveable.dragTarget = document.querySelector(".scrolling-page")
 
     // console.log('MOV >>', this.$refs.moveable)
+    this.updateVisibility()
   },
 
   beforeDestroy () {
@@ -191,9 +210,10 @@ export default {
 }
 
 .testmove {
-  display:block;
+  display: block;
+  top:0;
+  left:0;
   position: absolute;
-  top: 0;
   height: 150px;
   width: 150px;
   margin: 200px;
