@@ -2,6 +2,7 @@
   <div>
     <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
     <movable class="testmove"
+             v-if="signatureBounds"
              :bounds="signatureBounds"
              :posTop="0"
              :posLeft="0"><span>teste</span></movable>
@@ -52,10 +53,7 @@ export default {
         throttleDrag: 1,
         renderDirections: ["nw", "ne", "sw", "se"]
       },
-      signatureBounds: {
-        x: [],
-        y: []
-      },
+      signatureBounds: null,
       signatureDimensions: {}
     }
   },
@@ -212,11 +210,9 @@ export default {
 .testmove {
   display: block;
   top:0;
-  left:0;
   position: absolute;
   height: 150px;
   width: 150px;
-  margin: 200px;
   background: #f00;
   color: white;
 }
