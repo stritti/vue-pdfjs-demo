@@ -4,13 +4,13 @@
     <movable class="testmove"
              v-if="signatureBounds && !needsRefresh"
              :bounds="signatureBounds"
-             :posTop="signatureBounds.y[0]"
-             :posLeft="signatureBounds.x[0]"><span>teste</span></movable>
+             :posTop="posTop"
+             :posLeft="posLeft"
+             ><span>teste</span></movable>
   </div>
 </template>
 
 <script>
-// import Moveable from 'vue-moveable'
 import debug from 'debug';
 
 const log = debug('app:components/PDFPage');
@@ -53,7 +53,9 @@ export default {
       signatureDimensions: {
         width: 150,
         height: 150,
-      }
+      },
+      posLeft: 0,
+      posTop: 0,
     }
   },
 
@@ -88,11 +90,6 @@ export default {
   },
 
   methods: {
-    handleDrag ({target, transform}) {
-      console.log("onDrag", transform);
-      target.style.transform = transform;
-    },
-
     focusPage () {
       if (this.isPageFocused) return;
 
@@ -134,23 +131,28 @@ export default {
       const originalHeight = 0.05
       const pageWidth = parseInt(this.$refs.canvas.getAttribute('width'))
       const pageHeight = parseInt(this.$refs.canvas.getAttribute('height'))
-      this.signatureDimensions = {
-        width: pageWidth * this.scale * originalWidth,
-        height: pageHeight * this.scale * originalHeight
-      }
+      
+      this.$nextTick(() => {
+        this.signatureDimensions = {
+          width: pageWidth * this.scale * originalWidth,
+          height: pageHeight * this.scale * originalHeight
+        }
 
-      this.signatureBounds = {
-        x: [
-          this.$refs.canvas.offsetLeft,
-          this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth - 150
-        ],
-        y: [
-          this.$refs.canvas.offsetTop,
-          this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight - 150
-        ]
-      }
-      this.needsRefresh = true
-      this.$nextTick(() => this.needsRefresh = false)
+        this.posLeft = this.$refs.canvas.offsetLeft
+        this.posTop = this.$refs.canvas.offsetTop
+        this.signatureBounds = {
+          x: [
+            0,
+            this.$refs.canvas.offsetWidth - 150
+          ],
+          y: [
+            0,
+            this.$refs.canvas.offsetHeight - 150
+          ]
+        }
+        this.needsRefresh = true
+        this.$nextTick(() => this.needsRefresh = false)
+      })
     },
 
     destroyPage (page) {
