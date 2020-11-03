@@ -48,13 +48,12 @@ export default {
   },
   data () {
     return {
-      moveable: {
-        draggable: true,
-        throttleDrag: 1,
-        renderDirections: ["nw", "ne", "sw", "se"]
-      },
+      
       signatureBounds: null,
-      signatureDimensions: {}
+      signatureDimensions: {
+        width: 150,
+        height: 150,
+      }
     }
   },
 
@@ -143,11 +142,11 @@ export default {
       this.signatureBounds = {
         x: [
           this.$refs.canvas.offsetLeft,
-          this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth
+          (this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth) - this.signatureDimensions.width
         ],
         y: [
           this.$refs.canvas.offsetTop,
-          this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight
+          (this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight) - this.signatureDimensions.height
         ]
       }
     },
@@ -213,6 +212,7 @@ export default {
   position: absolute;
   height: 150px;
   width: 150px;
+  margin: 0!important;
   background: #f00;
   color: white;
 }
