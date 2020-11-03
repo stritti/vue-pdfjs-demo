@@ -2,10 +2,10 @@
   <div>
     <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
     <movable class="testmove"
-             v-if="signatureBounds"
+             v-if="signatureBounds && !needsRefresh"
              :bounds="signatureBounds"
-             :posTop="0"
-             :posLeft="0"><span>teste</span></movable>
+             :posTop="signatureBounds.y[0]"
+             :posLeft="signatureBounds.x[0]"><span>teste</span></movable>
   </div>
 </template>
 
@@ -48,7 +48,7 @@ export default {
   },
   data () {
     return {
-      
+      needsRefresh: false,
       signatureBounds: null,
       signatureDimensions: {
         width: 150,
@@ -142,13 +142,15 @@ export default {
       this.signatureBounds = {
         x: [
           this.$refs.canvas.offsetLeft,
-          (this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth) - this.signatureDimensions.width
+          this.$refs.canvas.offsetLeft + this.$refs.canvas.offsetWidth - 150
         ],
         y: [
           this.$refs.canvas.offsetTop,
-          (this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight) - this.signatureDimensions.height
+          this.$refs.canvas.offsetTop + this.$refs.canvas.offsetHeight - 150
         ]
       }
+      this.needsRefresh = true
+      this.$nextTick(() => this.needsRefresh = false)
     },
 
     destroyPage (page) {
