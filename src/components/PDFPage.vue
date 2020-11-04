@@ -6,6 +6,7 @@
              :bounds="signatureBounds"
              :posTop="posTop"
              :posLeft="posLeft"
+             :style="`width:${signatureDimensions.width}px; height:${signatureDimensions.height}px;`"
              ><span>teste</span></movable>
   </div>
 </template>
@@ -153,31 +154,33 @@ export default {
     updateVisibility () {
       this.$parent.$emit('update-visibility');
 
-      const originalWidth = 0.1
-      const originalHeight = 0.05
-      const pageWidth = parseInt(this.$refs.canvas.getAttribute('width'))
-      const pageHeight = parseInt(this.$refs.canvas.getAttribute('height'))
       
-      this.signatureDimensions = {
-        width: pageWidth * this.scale * originalWidth,
-        height: pageHeight * this.scale * originalHeight
-      }
 
       this.updateSignatureParameters()
     },
 
     updateSignatureParameters() {
       this.$nextTick(() => {
+        const originalWidth = 0.08
+        const originalHeight = 0.03
+        const pageWidth = parseInt(this.$refs.canvas.offsetWidth)
+        const pageHeight = parseInt(this.$refs.canvas.offsetHeight)
+        
+        this.signatureDimensions = {
+          width: pageWidth * this.scale * originalWidth,
+          height: pageHeight * this.scale * originalHeight
+        }
+
         this.posLeft = this.$refs.canvas.offsetLeft
         this.posTop = this.$refs.canvas.offsetTop
         this.signatureBounds = {
           x: [
             0,
-            this.$refs.canvas.offsetWidth - 150
+            this.$refs.canvas.offsetWidth - this.signatureDimensions.width
           ],
           y: [
             0,
-            this.$refs.canvas.offsetHeight - 150
+            this.$refs.canvas.offsetHeight - this.signatureDimensions.height
           ]
         }
         this.needsRefresh = true
