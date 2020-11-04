@@ -20,6 +20,10 @@ import visible from '../directives/visible';
 
 export default {
   name: 'PDFPage',
+  directives: {
+    visible
+  },
+
   props: {
     page: {
       type: Object, // instance of PDFPageProxy returned from pdf.getPage
@@ -42,10 +46,7 @@ export default {
       default: false
     }
   },
-
-  directives: {
-    visible
-  },
+  
   data () {
     return {
       needsRefresh: false,
@@ -58,7 +59,7 @@ export default {
       posTop: 0,
     }
   },
-
+  
   computed: {
     actualSizeViewport () {
       return this.viewport.clone({scale: this.scale});
@@ -88,7 +89,32 @@ export default {
       return this.page.pageNumber;
     }
   },
+  
+  watch: {
+    scale: 'updateVisibility',
 
+    page (_newPage, oldPage) {
+      this.destroyPage(oldPage);
+    },
+
+    isElementFocused (isElementFocused) {
+      if (isElementFocused) this.focusPage();
+    }
+  },
+  
+  created () {
+    // PDFPageProxy#getViewport
+    // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
+    this.viewport = this.page.getViewport(this.optimalScale);
+  },
+
+  mounted () {
+    log(`Page ${this.pageNumber} mounted`);
+    // this.$refs.moveable.dragTarget = document.querySelector(".scrolling-page")
+
+    // console.log('MOV >>', this.$refs.moveable)
+    this.updateVisibility()
+  },
   methods: {
     focusPage () {
       if (this.isPageFocused) return;
@@ -132,12 +158,16 @@ export default {
       const pageWidth = parseInt(this.$refs.canvas.getAttribute('width'))
       const pageHeight = parseInt(this.$refs.canvas.getAttribute('height'))
       
-      this.$nextTick(() => {
-        this.signatureDimensions = {
-          width: pageWidth * this.scale * originalWidth,
-          height: pageHeight * this.scale * originalHeight
-        }
+      this.signatureDimensions = {
+        width: pageWidth * this.scale * originalWidth,
+        height: pageHeight * this.scale * originalHeight
+      }
 
+      this.updateSignatureParameters()
+    },
+
+    updateSignatureParameters() {
+      this.$nextTick(() => {
         this.posLeft = this.$refs.canvas.offsetLeft
         this.posTop = this.$refs.canvas.offsetTop
         this.signatureBounds = {
@@ -172,33 +202,7 @@ export default {
       delete this.renderTask;
     }
   },
-
-  watch: {
-    scale: 'updateVisibility',
-
-    page (_newPage, oldPage) {
-      this.destroyPage(oldPage);
-    },
-
-    isElementFocused (isElementFocused) {
-      if (isElementFocused) this.focusPage();
-    }
-  },
-
-  created () {
-    // PDFPageProxy#getViewport
-    // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
-    this.viewport = this.page.getViewport(this.optimalScale);
-  },
-
-  mounted () {
-    log(`Page ${this.pageNumber} mounted`);
-    // this.$refs.moveable.dragTarget = document.querySelector(".scrolling-page")
-
-    // console.log('MOV >>', this.$refs.moveable)
-    this.updateVisibility()
-  },
-
+  
   beforeDestroy () {
     this.destroyPage(this.page);
   }
@@ -217,7 +221,6 @@ export default {
   height: 150px;
   width: 150px;
   margin: 0!important;
-  background: #f00;
   color: white;
 }
 
