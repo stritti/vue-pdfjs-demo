@@ -1,6 +1,6 @@
 <template>
   <div>
-    <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
+    <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class="target"></canvas>
     <movable 
       class="testmove"
       ref="signature"
@@ -9,7 +9,10 @@
       :posTop="posTop"
       :posLeft="posLeft"
       :style="`width:${signatureDimensions.width}px; height:${signatureDimensions.height}px;`"
-    ></movable>
+      @complete="handleDrag"
+    >
+      <img :src="signatureUrl" alt="Signature" :width="signatureDimensions.width" :height="signatureDimensions.height" />
+    </movable>
   </div>
 </template>
 
@@ -60,13 +63,14 @@ export default {
       },
       posLeft: 0,
       posTop: 0,
-      pageOriginalWidth: 210,
-      pageOriginalHeight: 297,
-      signatureOriginalWidth: 40,
-      signatureOriginalHeight: 20,
-      signatureX: 160,
-      signatureY: 267,
-      pageToSign: 2
+      pageOriginalWidth: 21,
+      pageOriginalHeight: 29.7,
+      signatureOriginalWidth: 3.72,
+      signatureOriginalHeight: 2.36,
+      signatureX: 16,
+      signatureY: 26.7,
+      pageToSign: 2,
+      signatureUrl: 'https://amagovpt.github.io/autenticacao.gov/Pictures/Autenticacao.Gov_assinatura_sample.png'
     }
   },
   
@@ -213,6 +217,25 @@ export default {
 
     },
 
+    convertPixelToUnit(type, value) {
+      const pageWidth = parseInt(this.$refs.canvas.offsetWidth)
+      const pageHeight = parseInt(this.$refs.canvas.offsetHeight)
+      if(type === 'x') {
+        return this.pageOriginalWidth * value / pageWidth
+      }
+
+      return this.pageOriginalHeight * value / pageHeight
+
+    },
+
+    handleDrag() {
+      const positionX = this.$refs.signature.left - this.$refs.canvas.offsetLeft
+      const positionY = this.$refs.signature.top - this.$refs.canvas.offsetTop
+
+      this.signatureX = this.convertPixelToUnit('x', positionX)
+      this.signatureY = this.convertPixelToUnit('y', positionY)
+    },
+
     destroyPage (page) {
       // PDFPageProxy#_destroy
       // https://mozilla.github.io/pdf.js/api/draft/PDFPageProxy.html
@@ -251,6 +274,10 @@ export default {
   margin: 0!important;
   background-color: rgba(0, 110, 255, 0.603)!important;
   color: white;
+}
+
+.testmove img {
+  border: dashed 3px rgb(56, 49, 49)
 }
 
 </style>
