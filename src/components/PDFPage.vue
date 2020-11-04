@@ -1,13 +1,15 @@
 <template>
   <div>
     <canvas ref="canvas" v-visible.once="drawPage" v-bind="canvasAttrs" class=".target"></canvas>
-    <movable class="testmove"
-             v-if="signatureBounds && !needsRefresh"
-             :bounds="signatureBounds"
-             :posTop="posTop"
-             :posLeft="posLeft"
-             :style="`width:${signatureDimensions.width}px; height:${signatureDimensions.height}px;`"
-             ><span>teste</span></movable>
+    <movable 
+      class="testmove"
+      ref="signature"
+      v-if="signatureBounds && !needsRefresh"
+      :bounds="signatureBounds"
+      :posTop="posTop"
+      :posLeft="posLeft"
+      :style="`width:${signatureDimensions.width}px; height:${signatureDimensions.height}px;`"
+    ></movable>
   </div>
 </template>
 
@@ -58,6 +60,12 @@ export default {
       },
       posLeft: 0,
       posTop: 0,
+      pageOriginalWidth: 210,
+      pageOriginalHeight: 297,
+      signatureOriginalWidth: 40,
+      signatureOriginalHeight: 20,
+      signatureX: 160,
+      signatureY: 267
     }
   },
   
@@ -154,21 +162,15 @@ export default {
     updateVisibility () {
       this.$parent.$emit('update-visibility');
 
-      
-
       this.updateSignatureParameters()
     },
 
     updateSignatureParameters() {
       this.$nextTick(() => {
-        const originalWidth = 0.08
-        const originalHeight = 0.03
-        const pageWidth = parseInt(this.$refs.canvas.offsetWidth)
-        const pageHeight = parseInt(this.$refs.canvas.offsetHeight)
         
         this.signatureDimensions = {
-          width: pageWidth * this.scale * originalWidth,
-          height: pageHeight * this.scale * originalHeight
+          width: this.convertUnitToPixel('x',this.signatureOriginalWidth),
+          height: this.convertUnitToPixel('y',this.signatureOriginalHeight)
         }
 
         this.posLeft = this.$refs.canvas.offsetLeft
@@ -184,8 +186,26 @@ export default {
           ]
         }
         this.needsRefresh = true
-        this.$nextTick(() => this.needsRefresh = false)
+        this.$nextTick(() => {
+          this.needsRefresh = false
+
+          this.$nextTick(() => {
+            this.posLeft = this.convertUnitToPixel('x',this.signatureX) + this.$refs.canvas.offsetLeft
+            this.posTop = this.convertUnitToPixel('y',this.signatureY) + this.$refs.canvas.offsetTop
+          })
+        })
       })
+    },
+
+    convertUnitToPixel(type, value) {
+      const pageWidth = parseInt(this.$refs.canvas.offsetWidth)
+      const pageHeight = parseInt(this.$refs.canvas.offsetHeight)
+      if(type === 'x') {
+        return pageWidth * value / this.pageOriginalWidth
+      }
+
+      return pageHeight * value / this.pageOriginalHeight
+
     },
 
     destroyPage (page) {
@@ -224,6 +244,7 @@ export default {
   height: 150px;
   width: 150px;
   margin: 0!important;
+  background-color: rgba(0, 110, 255, 0.603)!important;
   color: white;
 }
 
