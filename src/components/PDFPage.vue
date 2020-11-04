@@ -4,7 +4,7 @@
     <movable 
       class="testmove"
       ref="signature"
-      v-if="signatureBounds && !needsRefresh"
+      v-if="canSign"
       :bounds="signatureBounds"
       :posTop="posTop"
       :posLeft="posLeft"
@@ -65,7 +65,8 @@ export default {
       signatureOriginalWidth: 40,
       signatureOriginalHeight: 20,
       signatureX: 160,
-      signatureY: 267
+      signatureY: 267,
+      pageToSign: 2
     }
   },
   
@@ -96,6 +97,10 @@ export default {
 
     pageNumber () {
       return this.page.pageNumber;
+    },
+
+    canSign() {
+      return parseInt(this.pageNumber) === parseInt(this.pageToSign) && this.signatureBounds && !this.needsRefresh
     }
   },
   
