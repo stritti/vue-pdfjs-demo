@@ -277,7 +277,8 @@ export default {
 }
 
 .testmove img {
-  border: dashed 3px rgb(56, 49, 49)
+  border: dashed 3px rgb(56, 49, 49);
+  box-sizing: border-box;
 }
 
 </style>
